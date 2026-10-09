@@ -1,0 +1,95 @@
+name: ticket-agent
+
+x-backend: &backend
+  build: ./backend
+  image: ticket-agent-backend:local
+  env_file:
+    - path: .env
+      required: false
+  environment: &backend-env
+    DATABASE_URL: postgresql+psycopg://support:support@postgres:5432/support
+    CHECKPOINT_DATABASE_URL: postgresql://support:support@postgres:5432/support
+    REDIS_URL: redis://redis:6379/0
+    TICKETING_BASE_URL: http://mock-ticketing:8100
+    OBJECT_STORE_DIR: /data/objects
+  volumes:
+    - objects:/data/objects
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: support
+      POSTGRES_PASSWORD: support
+      POSTGRES_DB: support
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U support -d support"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  mock-ticketing:
+    build: ./mock-ticketing
+    environment:
+      FAILURE_RATE: ${TICKETING_FAILURE_RATE:-0}
+      LATENCY_MS: "40"
+
+  # One-shot: schema migrations, LangGraph checkpoint tables, demo users and knowledge base ingestion.
+  migrate:
+    <<: *backend
+    command: sh -c "alembic upgrade head && python -m app.db.seed"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api:
+    <<: *backend
+    deploy:
+      replicas: 2  # stateless; LangGraph state lives in the Postgres checkpointer
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+      mock-ticketing:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  worker:
+    <<: *backend
+    command: celery -A app.workers.celery_app worker --loglevel=INFO --concurrency=2
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+
+  # Nginx serves the React build and load-balances /api across the API replicas.
+  web:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  objects:

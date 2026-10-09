@@ -1,0 +1,133 @@
+# Configuration-driven agent registration (spec §6 Maintainability).
+# Adding a department = add an entry here + its knowledge documents. No graph code changes.
+agents:
+  it:
+    label: IT Service Desk Agent
+    description: Devices, accounts, passwords, network/VPN, email, software and access.
+    knowledge_collections: [it]
+    tools: [reset_password, unlock_account, request_software, grant_admin_access, create_ticket, get_ticket_status]
+    support_queue: IT Service Desk L2
+    prompt_version: it.v1
+    keywords:
+      password: 3
+      vpn: 3
+      laptop: 3
+      wifi: 3
+      wi-fi: 3
+      network: 2
+      outlook: 3
+      email: 2
+      mfa: 3
+      authenticator: 3
+      login: 2
+      log in: 2
+      sign in: 2
+      locked: 2
+      account: 1
+      software: 3
+      install: 2
+      license: 2
+      printer: 3
+      monitor: 2
+      computer: 2
+      teams: 2
+      zoom: 2
+      admin access: 3
+      admin rights: 3
+      phishing: 3
+      virus: 3
+      malware: 3
+      crash: 2
+      error: 1
+      screen: 1
+      keyboard: 2
+      github: 2
+      access to: 1
+  hr:
+    label: HR Agent
+    description: Leave, benefits, payroll profile, onboarding/offboarding, workplace policies and conduct.
+    knowledge_collections: [hr]
+    tools: [get_leave_balance, submit_leave_request, update_bank_details, create_ticket, get_ticket_status]
+    support_queue: HR Operations
+    prompt_version: hr.v1
+    keywords:
+      leave: 3
+      vacation: 3
+      pto: 3
+      holiday: 2
+      sick: 3
+      maternity: 3
+      paternity: 3
+      parental: 3
+      benefits: 3
+      insurance: 3
+      health: 1
+      onboarding: 3
+      resignation: 3
+      resign: 3
+      notice period: 3
+      harassment: 3
+      policy: 1
+      performance review: 3
+      appraisal: 3
+      promotion: 2
+      bank details: 3
+      bank account: 3
+      relocation: 2
+      work from home: 2
+      remote work: 2
+      hybrid: 1
+  finance:
+    label: Finance Agent
+    description: Expenses, reimbursements, travel spend, corporate cards, invoices and vendor payments.
+    knowledge_collections: [finance]
+    tools: [submit_expense_claim, get_reimbursement_status, create_ticket, get_ticket_status]
+    support_queue: Finance Shared Services
+    prompt_version: finance.v1
+    keywords:
+      expense: 3
+      expenses: 3
+      reimbursement: 3
+      reimburse: 3
+      claim: 2
+      invoice: 3
+      vendor: 2
+      payment: 2
+      corporate card: 3
+      receipt: 2
+      per diem: 3
+      travel: 1
+      hotel: 1
+      flight: 1
+      mileage: 3
+      budget: 2
+      purchase order: 3
+      payslip: 2
+      tax: 2
+      refund: 2
+      meal: 1
+  facilities:
+    label: Facilities Agent
+    description: Offices, meeting rooms, parking, badges, desks, maintenance and building services.
+    knowledge_collections: [facilities]
+    tools: [book_meeting_room, create_ticket, get_ticket_status]
+    support_queue: Workplace Services
+    prompt_version: facilities.v1
+    keywords:
+      meeting room: 3
+      conference room: 3
+      book a room: 3
+      parking: 3
+      badge: 3
+      access card: 3
+      desk: 2
+      office: 1
+      air conditioning: 3
+      ac: 1
+      temperature: 2
+      cleaning: 3
+      maintenance: 2
+      leak: 3
+      light: 1
+      cafeteria: 3
+      building: 2
